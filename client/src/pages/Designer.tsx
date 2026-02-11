@@ -212,6 +212,7 @@ function DesignerInner() {
             // Use project name from file or fallback to filename
             const loadedProjectName = json.projectName || file.name.replace(/\.json$/i, '');
             loadNetwork(json.nodes, json.edges, json.computationalParams, json.outputRequests, loadedProjectName);
+            setHasStarted(true);
             toast({ title: "Project Loaded", description: `Network topology "${loadedProjectName}" restored from JSON.` });
           } else {
             throw new Error("Invalid JSON format");
@@ -221,6 +222,7 @@ function DesignerInner() {
           if (nodes.length > 0) {
             const loadedProjectName = file.name.replace(/\.inp$/i, '');
             loadNetwork(nodes, edges, undefined, undefined, loadedProjectName);
+            setHasStarted(true);
             toast({ title: "Project Loaded", description: `Network topology "${loadedProjectName}" restored from .inp file.` });
           } else {
             throw new Error("No valid network elements found in .inp file");
@@ -296,6 +298,29 @@ function DesignerInner() {
   };
 
   const [isGeneratingOut, setIsGeneratingOut] = useState(false);
+  const [hasStarted, setHasStarted] = useState(false);
+
+  useEffect(() => {
+    if (nodes.length > 0) {
+      setHasStarted(true);
+    }
+  }, [nodes.length]);
+
+  const handleNewProject = () => {
+    clearNetwork();
+    setHasStarted(true);
+  };
+
+  const handleOpenProject = () => {
+    handleLoadClick();
+  };
+
+  // Update setHasStarted if loadNetwork is successful
+  const originalLoadNetwork = loadNetwork;
+  const wrappedLoadNetwork = (...args: any[]) => {
+    setHasStarted(true);
+    return (originalLoadNetwork as any)(...args);
+  };
 
   const handleGenerateOut = async () => {
     // Create file input element
@@ -377,6 +402,62 @@ function DesignerInner() {
     window.addEventListener('toggle-shortcut-console', handleToggleConsole);
     return () => window.removeEventListener('toggle-shortcut-console', handleToggleConsole);
   }, []);
+
+  if (!hasStarted && nodes.length === 0) {
+    return (
+      <div className="flex flex-col h-screen w-full bg-slate-50 items-center justify-center p-4">
+        <div className="max-w-md w-full bg-white rounded-xl shadow-lg border border-slate-200 overflow-hidden">
+          <div className="p-8 text-center border-b border-slate-100 bg-slate-50/50">
+            <div className="w-16 h-16 bg-primary/10 rounded-2xl flex items-center justify-center mx-auto mb-4">
+              <PlusCircle className="w-10 h-10 text-primary" />
+            </div>
+            <h1 className="text-2xl font-bold text-slate-900 mb-2">
+              Welcome to WHAMO
+            </h1>
+            <p className="text-slate-500 text-sm">
+              Hydraulic Transient Analysis Software
+            </p>
+          </div>
+          
+          <div className="p-6 space-y-4">
+            <Button 
+              className="w-full h-14 text-lg font-semibold flex items-center justify-center gap-3 hover-elevate transition-all duration-200"
+              onClick={handleNewProject}
+              data-testid="button-new-project"
+            >
+              <PlusCircle className="w-5 h-5" />
+              New Project
+            </Button>
+            
+            <Button 
+              variant="outline"
+              className="w-full h-14 text-lg font-semibold flex items-center justify-center gap-3 hover-elevate transition-all duration-200"
+              onClick={handleOpenProject}
+              data-testid="button-open-project"
+            >
+              <Download className="w-5 h-5" />
+              Open Project
+            </Button>
+            
+            <div className="pt-4 text-center">
+              <p className="text-xs text-slate-400">
+                Design, simulate, and analyze water distribution networks.
+              </p>
+            </div>
+          </div>
+        </div>
+        
+        {/* Hidden File Input for Open Project */}
+        <input 
+          type="file" 
+          ref={fileInputRef} 
+          onChange={handleFileChange} 
+          accept=".json,.inp" 
+          className="hidden" 
+        />
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col h-screen w-full overflow-hidden bg-background text-foreground">
