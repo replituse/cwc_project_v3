@@ -64,6 +64,15 @@ import { useToast } from "@/hooks/use-toast";
 import { generateSystemDiagramSVG } from "@/lib/diagram-generator";
 import folderIcon from "@assets/open-folder_1770356038145.png";
 
+interface HeaderProps {
+  onExport: (fileName?: string) => void;
+  onGenerateOut: (fileName?: string) => void;
+  isGeneratingOut: boolean;
+  onSave: () => void;
+  onLoad: () => void;
+  onShowDiagram?: () => void;
+}
+
 export function Header({
   onExport,
   onGenerateOut,

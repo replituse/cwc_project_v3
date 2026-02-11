@@ -53,6 +53,10 @@ export function Toolbar({ onExport, onSave, onLoad }: { onExport: (fileName?: st
     setProjectNameError,
   } = useNetworkStore();
 
+  const [localParams, setLocalParams] = useState(computationalParams);
+  const [selectedElementId, setSelectedElementId] = useState<string>("");
+  const [selectedVars, setSelectedVars] = useState<string[]>([]);
+
   const handleAddRequest = () => {
     if (!selectedElementId || selectedVars.length === 0) return;
     
